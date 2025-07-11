@@ -1,0 +1,6 @@
+name: oma-bot
+channels:
+  - defaults
+dependencies:
+  - python=3.11
+prefix: /opt/anaconda3/envs/oma-bot
