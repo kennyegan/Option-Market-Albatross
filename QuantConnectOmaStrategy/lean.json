@@ -1,0 +1,28 @@
+{
+    "algorithm-id": "oma-options-arbitrage-v1",
+    "algorithm-language": "Python",
+    "parameters": {
+        "iv-rv-threshold": "1.2",
+        "spread-threshold": "0.005",
+        "max-position-size": "0.05",
+        "vega-limit": "10000",
+        "delta-tolerance": "100",
+        "max-daily-loss": "0.02"
+    },
+    "environments": {
+        "backtesting": {
+            "live-mode": false,
+            "setup-handler": "QuantConnect.Lean.Engine.Setup.BacktestingSetupHandler",
+            "result-handler": "QuantConnect.Lean.Engine.Results.BacktestingResultHandler",
+            "data-feed-handler": "QuantConnect.Lean.Engine.DataFeeds.FileSystemDataFeed",
+            "real-time-handler": "QuantConnect.Lean.Engine.RealTime.BacktestingRealTimeHandler",
+            "history-provider": "QuantConnect.Lean.Engine.HistoricalData.SubscriptionDataReaderHistoryProvider",
+            "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BacktestingTransactionHandler"
+        }
+    },
+    "data-folder": "../../../Data/",
+    "debugging": false,
+    "debugging-method": "LocalCmdline",
+    "log-handler": "QuantConnect.Logging.FileLogHandler",
+    "messaging-handler": "QuantConnect.Messaging.EventMessagingHandler"
+}
