@@ -1,0 +1,10 @@
+# QuantConnect OMA Strategy Requirements
+# Note: Most dependencies are provided by QuantConnect's environment
+
+# Core dependencies (usually pre-installed in QC)
+numpy==1.24.3
+pandas==2.0.3
+scipy==1.11.1
+
+# Additional dependencies if needed
+# quantconnect-stubs  # For local development IDE support
