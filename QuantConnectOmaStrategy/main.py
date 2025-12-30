@@ -449,16 +449,17 @@ class OMAOptionsArbitrageAlgorithm(QCAlgorithm):
             return
 
         # Filter for liquid contracts
-        liquid_contracts = [
-            contract
-            for contract in chain
-            if contract.OpenInterest > 1000
-            and contract.Volume > 1000
-            and contract.BidSize > 0
-            and contract.AskSize > 0
-            and contract.Bid > 0
-            and contract.Ask > contract.Bid
-        ]
+        liquid_contracts = []
+        for contract in chain:
+            if contract.OpenInterest > 1000 and contract.Volume > 1000:
+                # Get security to access bid/ask prices
+                security = self.Securities.get(contract.Symbol)
+                if security:
+                    bid = security.BidPrice
+                    ask = security.AskPrice
+                    if (bid > 0 and ask > bid and 
+                        contract.BidSize > 0 and contract.AskSize > 0):
+                        liquid_contracts.append(contract)
 
         # Store active chains
         underlying = chain.Underlying.Symbol if chain.Underlying else chain.Symbol

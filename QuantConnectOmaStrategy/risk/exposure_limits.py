@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 import numpy as np
 from datetime import datetime, timedelta
+from utils.logger import LogLevel
 
 
 class RiskAction(Enum):

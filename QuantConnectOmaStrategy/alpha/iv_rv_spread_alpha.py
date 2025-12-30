@@ -275,7 +275,7 @@ class IVRVSpreadAlphaModel(AlphaModel):
             Insight if signal generated, None otherwise
         """
         # 1. Liquidity filter
-        if not self._passes_liquidity_filter(contract):
+        if not self._passes_liquidity_filter(contract, algorithm):
             return None
 
         # 2. Moneyness filter
@@ -302,7 +302,7 @@ class IVRVSpreadAlphaModel(AlphaModel):
         )
 
         # 6. Calculate spread signal
-        spread_signal = self._calculate_spread_signal(contract)
+        spread_signal = self._calculate_spread_signal(contract, algorithm)
 
         # 7. Apply regime adjustments
         adjusted_iv_rv_signal = self._apply_regime_adjustment(iv_rv_signal, regime)
@@ -346,16 +346,8 @@ class IVRVSpreadAlphaModel(AlphaModel):
 
         return insight
 
-    def _passes_liquidity_filter(self, contract) -> bool:
-        """
-        Check if contract meets liquidity requirements.
-
-        Args:
-            contract: Option contract
-
-        Returns:
-            True if contract is liquid enough to trade
-        """
+    def _passes_liquidity_filter(self, contract, algorithm: QCAlgorithm) -> bool:
+        """Check if contract meets liquidity requirements."""
         if contract.OpenInterest < self.config.min_open_interest:
             self.diagnostics["signals_filtered_liquidity"] += 1
             return False
@@ -367,10 +359,18 @@ class IVRVSpreadAlphaModel(AlphaModel):
         if contract.BidSize <= 0 or contract.AskSize <= 0:
             return False
 
-        if contract.Bid < self.config.min_bid:
+        # Get bid/ask from security
+        security = algorithm.Securities.get(contract.Symbol)
+        if not security:
             return False
 
-        if contract.Ask <= contract.Bid:
+        bid = security.BidPrice
+        ask = security.AskPrice
+
+        if bid < self.config.min_bid:
+            return False
+
+        if ask <= bid:
             return False
 
         return True
@@ -452,20 +452,20 @@ class IVRVSpreadAlphaModel(AlphaModel):
                 self.logger.log(f"Error calculating IV/RV signal: {e}", LogLevel.ERROR)
             return 0
 
-    def _calculate_spread_signal(self, contract) -> float:
-        """
-        Calculate bid/ask spread capture signal.
-
-        Args:
-            contract: Option contract
-
-        Returns:
-            Signal strength (0 to 1)
-        """
+    def _calculate_spread_signal(self, contract, algorithm: QCAlgorithm) -> float:
+        """Calculate bid/ask spread capture signal."""
         try:
+            # Get bid/ask from security
+            security = algorithm.Securities.get(contract.Symbol)
+            if not security:
+                return 0
+
+            bid = security.BidPrice
+            ask = security.AskPrice
+
             # Calculate mark price and spread
-            mark_price = (contract.Bid + contract.Ask) / 2
-            spread = contract.Ask - contract.Bid
+            mark_price = (bid + ask) / 2
+            spread = ask - bid
 
             if mark_price <= 0:
                 return 0
@@ -633,14 +633,23 @@ class IVRVSpreadAlphaModel(AlphaModel):
         insight.Properties["Moneyness"] = moneyness
         insight.Properties["DTE"] = dte
         insight.Properties["Regime"] = regime or "UNKNOWN"
-        insight.Properties["Bid"] = contract.Bid
-        insight.Properties["Ask"] = contract.Ask
-        insight.Properties["Mark"] = (contract.Bid + contract.Ask) / 2
-        insight.Properties["SpreadPct"] = (
-            (contract.Ask - contract.Bid) / ((contract.Bid + contract.Ask) / 2)
-            if contract.Bid + contract.Ask > 0
-            else 0
-        )
+        
+        # Get bid/ask from security
+        security = algorithm.Securities.get(contract.Symbol)
+        if security:
+            bid = security.BidPrice
+            ask = security.AskPrice
+            insight.Properties["Bid"] = bid
+            insight.Properties["Ask"] = ask
+            insight.Properties["Mark"] = (bid + ask) / 2 if bid + ask > 0 else 0
+            insight.Properties["SpreadPct"] = (
+                (ask - bid) / ((bid + ask) / 2) if bid + ask > 0 else 0
+            )
+        else:
+            insight.Properties["Bid"] = 0
+            insight.Properties["Ask"] = 0
+            insight.Properties["Mark"] = 0
+            insight.Properties["SpreadPct"] = 0
 
         # Log signal generation
         if self.logger:
