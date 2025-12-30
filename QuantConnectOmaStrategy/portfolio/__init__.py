@@ -4,12 +4,12 @@ from portfolio.delta_vega_neutral import (
     DeltaVegaNeutralPortfolioConstructionModel,
     PortfolioConfig,
     PortfolioRiskSnapshot,
-    RiskBucket
+    RiskBucket,
 )
 
 __all__ = [
-    'DeltaVegaNeutralPortfolioConstructionModel',
-    'PortfolioConfig',
-    'PortfolioRiskSnapshot',
-    'RiskBucket'
+    "DeltaVegaNeutralPortfolioConstructionModel",
+    "PortfolioConfig",
+    "PortfolioRiskSnapshot",
+    "RiskBucket",
 ]
