@@ -1,6 +1,6 @@
 # Data Processing Package
 
-from data.realized_vol_calc import (
+from .realized_vol_calc import (
     RealizedVolatilityCalculator,
     RealizedVolSummary,
     MultiWindowVolSummary

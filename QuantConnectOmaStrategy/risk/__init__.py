@@ -1,12 +1,12 @@
 # Risk Management Model Package
 
-from risk.exposure_limits import (
+from .exposure_limits import (
     ExposureLimitsRiskManagementModel,
     RiskConfig,
     ScenarioConfig,
     RiskAction,
 )
-from risk.vol_regime import (
+from .vol_regime import (
     VolatilityRegimeClassifier,
     VolatilityRegime,
     RegimeConfig,

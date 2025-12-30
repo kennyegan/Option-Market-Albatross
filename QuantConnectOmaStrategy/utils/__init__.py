@@ -1,6 +1,6 @@
 # Utilities Package
 
-from utils.logger import (
+from .logger import (
     StrategyLogger,
     LogLevel,
     LogOutputMode,

@@ -1,6 +1,6 @@
 # Portfolio Construction Model Package
 
-from portfolio.delta_vega_neutral import (
+from .delta_vega_neutral import (
     DeltaVegaNeutralPortfolioConstructionModel,
     PortfolioConfig,
     PortfolioRiskSnapshot,
