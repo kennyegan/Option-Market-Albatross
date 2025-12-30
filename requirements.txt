@@ -26,6 +26,6 @@ notebook>=6.5.0
 # QuantConnect (for local Lean CLI)
 # lean>=1.0.0          # Uncomment if using Lean CLI locally
 
-# Optional: Data Analysis
+# Data Analysis
 matplotlib>=3.7.0     # Plotting
 seaborn>=0.12.0       # Statistical visualization
