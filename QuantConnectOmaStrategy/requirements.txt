@@ -1,10 +1,28 @@
 # QuantConnect OMA Strategy Requirements
-# Note: Most dependencies are provided by QuantConnect's environment
+# 
+# Note: Most dependencies are provided by QuantConnect's cloud environment
+# This file is for local development, testing, and Lean CLI usage
+#
+# For QuantConnect Cloud: No installation needed - dependencies are pre-installed
+# For Local Development: Install these for IDE support and testing
 
-# Core dependencies (usually pre-installed in QC)
-numpy==1.24.3
-pandas==2.0.3
-scipy==1.11.1
+# Core Scientific Computing (usually pre-installed in QC cloud)
+numpy>=1.24.3,<2.0.0
+pandas>=2.0.3,<3.0.0
+scipy>=1.11.1
 
-# Additional dependencies if needed
-# quantconnect-stubs  # For local development IDE support
+# Development & Testing (local only)
+# Uncomment if developing locally:
+# black>=23.0.0          # Code formatting
+# pylint>=2.17.0         # Linting
+# pytest>=7.4.0          # Testing
+# pytest-cov>=4.1.0      # Coverage
+
+# QuantConnect Lean CLI (optional, for local backtesting)
+# Install separately: pip install lean
+
+# Type Stubs (for IDE support)
+# quantconnect-stubs  # Uncomment for better IDE autocomplete
+
+# Note: AlgorithmImports is provided by QuantConnect environment
+# Do not install it via pip - it's part of the QuantConnect platform

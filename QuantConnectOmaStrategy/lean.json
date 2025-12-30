@@ -1,13 +1,71 @@
 {
-    "algorithm-id": "oma-options-arbitrage-v1",
+    "algorithm-id": "oma-options-arbitrage-v2",
     "algorithm-language": "Python",
     "parameters": {
         "iv-rv-threshold": "1.2",
+        "iv-rv-max-signal": "2.0",
         "spread-threshold": "0.005",
         "max-position-size": "0.05",
         "vega-limit": "10000",
         "delta-tolerance": "100",
-        "max-daily-loss": "0.02"
+        "gamma-limit": "500",
+        "max-daily-loss": "0.02",
+        "warning-daily-loss": "0.015",
+        
+        "moneyness-min": "0.90",
+        "moneyness-max": "1.10",
+        "min-dte": "1",
+        "max-dte": "45",
+        "optimal-dte-min": "7",
+        "optimal-dte-max": "21",
+        
+        "rv-lookback-default": "10",
+        "rv-lookback-windows": "5,10,20,60",
+        "ewma-decay": "0.94",
+        "max-rv-uncertainty-ratio": "0.2",
+        
+        "vol-regime-vix-calm": "15",
+        "vol-regime-vix-normal": "20",
+        "vol-regime-vix-stressed": "30",
+        "vol-regime-vix-spike": "3",
+        "vol-regime-rv-calm": "0.12",
+        "vol-regime-rv-normal": "0.18",
+        "vol-regime-rv-stressed": "0.30",
+        
+        "target-daily-vol": "0.01",
+        "vol-scaling-enabled": "true",
+        "min-vol-scale": "0.2",
+        "max-vol-scale": "2.0",
+        
+        "bucket-vega-limit-index": "0.6",
+        "bucket-vega-limit-tech": "0.3",
+        "bucket-vega-limit-small-cap": "0.2",
+        "bucket-vega-limit-single-name": "0.15",
+        
+        "scenario-max-loss": "0.10",
+        "scenario-spx-down-5-vol-up": "-0.05,5.0",
+        "scenario-spx-down-10-vol-up": "-0.10,10.0",
+        "scenario-spx-up-5-vol-down": "0.05,-3.0",
+        "scenario-vol-spike": "0.0,8.0",
+        "scenario-vol-crush": "0.0,-5.0",
+        
+        "min-edge-after-costs-bps": "20",
+        "spread-cost-multiplier": "0.5",
+        "impact-buffer-bps": "5",
+        "max-participation-pct": "0.20",
+        "illiquid-participation-pct": "0.05",
+        "unfilled-timeout-seconds": "60",
+        "max-replace-attempts": "3",
+        
+        "limit-order-offset-bps": "10",
+        "min-absolute-tick-offset": "0.05",
+        
+        "max-position-age-hours": "24",
+        "max-position-pct": "0.10",
+        "max-unrealized-loss-pct": "0.50",
+        
+        "log-level": "INFO",
+        "risk-snapshot-interval-minutes": "30"
     },
     "environments": {
         "backtesting": {
@@ -18,6 +76,14 @@
             "real-time-handler": "QuantConnect.Lean.Engine.RealTime.BacktestingRealTimeHandler",
             "history-provider": "QuantConnect.Lean.Engine.HistoricalData.SubscriptionDataReaderHistoryProvider",
             "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BacktestingTransactionHandler"
+        },
+        "live-paper": {
+            "live-mode": true,
+            "setup-handler": "QuantConnect.Lean.Engine.Setup.BrokerageSetupHandler",
+            "result-handler": "QuantConnect.Lean.Engine.Results.LiveTradingResultHandler",
+            "data-feed-handler": "QuantConnect.Lean.Engine.DataFeeds.LiveTradingDataFeed",
+            "real-time-handler": "QuantConnect.Lean.Engine.RealTime.LiveTradingRealTimeHandler",
+            "transaction-handler": "QuantConnect.Lean.Engine.TransactionHandlers.BrokerageTransactionHandler"
         }
     },
     "data-folder": "../../../Data/",

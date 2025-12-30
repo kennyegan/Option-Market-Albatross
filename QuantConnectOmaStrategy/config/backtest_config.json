@@ -1,31 +1,60 @@
 {
     "backtest_scenarios": {
         "default": {
-            "description": "Standard backtest configuration",
+            "description": "Standard backtest configuration with all V2 features",
             "start_date": "2023-01-01",
             "end_date": "2024-01-01",
             "initial_capital": 1000000,
             "parameters": {
-                "iv-rv-threshold": "1.2",
-                "spread-threshold": "0.005",
-                "max-position-size": "0.05",
-                "vega-limit": "10000",
-                "delta-tolerance": "100",
-                "max-daily-loss": "0.02"
+                "iv_rv_threshold": 1.2,
+                "iv_rv_max_signal": 2.0,
+                "spread_threshold": 0.005,
+                "max_position_size": 0.05,
+                "vega_limit": 10000,
+                "delta_tolerance": 100,
+                "gamma_limit": 500,
+                "max_daily_loss": 0.02,
+                
+                "moneyness_min": 0.90,
+                "moneyness_max": 1.10,
+                "min_dte": 1,
+                "max_dte": 45,
+                
+                "rv_lookback_default": 10,
+                "ewma_decay": 0.94,
+                
+                "target_daily_vol": 0.01,
+                "vol_scaling_enabled": true,
+                
+                "scenario_max_loss": 0.10,
+                "min_edge_after_costs_bps": 20
             }
         },
         "conservative": {
-            "description": "Conservative risk parameters for stable returns",
+            "description": "Conservative risk parameters with tighter limits",
             "start_date": "2023-01-01",
             "end_date": "2024-01-01",
             "initial_capital": 1000000,
             "parameters": {
-                "iv-rv-threshold": "1.3",
-                "spread-threshold": "0.008",
-                "max-position-size": "0.03",
-                "vega-limit": "5000",
-                "delta-tolerance": "50",
-                "max-daily-loss": "0.01"
+                "iv_rv_threshold": 1.3,
+                "iv_rv_max_signal": 1.8,
+                "spread_threshold": 0.008,
+                "max_position_size": 0.03,
+                "vega_limit": 5000,
+                "delta_tolerance": 50,
+                "gamma_limit": 250,
+                "max_daily_loss": 0.01,
+                
+                "moneyness_min": 0.95,
+                "moneyness_max": 1.05,
+                "min_dte": 3,
+                "max_dte": 30,
+                
+                "target_daily_vol": 0.005,
+                "vol_scaling_enabled": true,
+                
+                "scenario_max_loss": 0.05,
+                "min_edge_after_costs_bps": 30
             }
         },
         "aggressive": {
@@ -34,60 +63,236 @@
             "end_date": "2024-01-01",
             "initial_capital": 1000000,
             "parameters": {
-                "iv-rv-threshold": "1.1",
-                "spread-threshold": "0.003",
-                "max-position-size": "0.08",
-                "vega-limit": "15000",
-                "delta-tolerance": "150",
-                "max-daily-loss": "0.03"
+                "iv_rv_threshold": 1.1,
+                "iv_rv_max_signal": 2.5,
+                "spread_threshold": 0.003,
+                "max_position_size": 0.08,
+                "vega_limit": 15000,
+                "delta_tolerance": 150,
+                "gamma_limit": 750,
+                "max_daily_loss": 0.03,
+                
+                "moneyness_min": 0.85,
+                "moneyness_max": 1.15,
+                "min_dte": 1,
+                "max_dte": 45,
+                
+                "target_daily_vol": 0.015,
+                "vol_scaling_enabled": true,
+                
+                "scenario_max_loss": 0.15,
+                "min_edge_after_costs_bps": 15
             }
         },
         "volatility_crisis": {
-            "description": "Test during high volatility periods (COVID-19 era)",
+            "description": "Test during high volatility periods (COVID-19, 2022)",
             "start_date": "2020-02-01",
             "end_date": "2020-06-01",
             "initial_capital": 1000000,
             "parameters": {
-                "iv-rv-threshold": "1.15",
-                "spread-threshold": "0.010",
-                "max-position-size": "0.02",
-                "vega-limit": "3000",
-                "delta-tolerance": "50",
-                "max-daily-loss": "0.015"
+                "iv_rv_threshold": 1.15,
+                "spread_threshold": 0.010,
+                "max_position_size": 0.02,
+                "vega_limit": 3000,
+                "delta_tolerance": 50,
+                "gamma_limit": 150,
+                "max_daily_loss": 0.015,
+                
+                "moneyness_min": 0.95,
+                "moneyness_max": 1.05,
+                
+                "target_daily_vol": 0.005,
+                "vol_scaling_enabled": true,
+                
+                "vol_regime_adjustments": {
+                    "disable_short_vol_in_crisis": true,
+                    "regime_stress_multiplier": 0.3
+                },
+                
+                "scenario_max_loss": 0.05,
+                "min_edge_after_costs_bps": 40
             }
         },
         "low_vol_regime": {
-            "description": "Test during low volatility periods",
+            "description": "Test during low volatility periods (2017)",
             "start_date": "2017-01-01",
             "end_date": "2018-01-01",
             "initial_capital": 1000000,
             "parameters": {
-                "iv-rv-threshold": "1.25",
-                "spread-threshold": "0.004",
-                "max-position-size": "0.06",
-                "vega-limit": "12000",
-                "delta-tolerance": "100",
-                "max-daily-loss": "0.025"
+                "iv_rv_threshold": 1.25,
+                "spread_threshold": 0.004,
+                "max_position_size": 0.06,
+                "vega_limit": 12000,
+                "delta_tolerance": 100,
+                "gamma_limit": 500,
+                "max_daily_loss": 0.025,
+                
+                "moneyness_min": 0.90,
+                "moneyness_max": 1.10,
+                
+                "target_daily_vol": 0.012,
+                "vol_scaling_enabled": true,
+                
+                "scenario_max_loss": 0.12,
+                "min_edge_after_costs_bps": 15
             }
         },
         "paper_trading": {
             "description": "Reduced size for paper trading validation",
             "start_date": "2024-01-01",
-            "end_date": "2024-06-01",
+            "end_date": "2024-12-31",
             "initial_capital": 100000,
             "parameters": {
-                "iv-rv-threshold": "1.2",
-                "spread-threshold": "0.005",
-                "max-position-size": "0.03",
-                "vega-limit": "1000",
-                "delta-tolerance": "25",
-                "max-daily-loss": "0.015"
+                "iv_rv_threshold": 1.2,
+                "spread_threshold": 0.005,
+                "max_position_size": 0.03,
+                "vega_limit": 1000,
+                "delta_tolerance": 25,
+                "gamma_limit": 50,
+                "max_daily_loss": 0.015,
+                
+                "target_daily_vol": 0.008,
+                "vol_scaling_enabled": true,
+                
+                "scenario_max_loss": 0.08,
+                "min_edge_after_costs_bps": 25,
+                
+                "log_level": "DEBUG"
+            }
+        },
+        "research_full_history": {
+            "description": "Full historical backtest for research",
+            "start_date": "2016-01-01",
+            "end_date": "2024-01-01",
+            "initial_capital": 1000000,
+            "parameters": {
+                "iv_rv_threshold": 1.2,
+                "spread_threshold": 0.005,
+                "max_position_size": 0.05,
+                "vega_limit": 10000,
+                "delta_tolerance": 100,
+                "gamma_limit": 500,
+                "max_daily_loss": 0.02,
+                
+                "target_daily_vol": 0.01,
+                "vol_scaling_enabled": true,
+                
+                "scenario_max_loss": 0.10,
+                "min_edge_after_costs_bps": 20
             }
         }
     },
+    
+    "vol_regime_config": {
+        "vix_thresholds": {
+            "calm_upper": 15,
+            "normal_upper": 20,
+            "stressed_upper": 30
+        },
+        "vix_change_thresholds": {
+            "spike": 3.0,
+            "crash": 5.0
+        },
+        "rv_thresholds": {
+            "calm_upper": 0.12,
+            "normal_upper": 0.18,
+            "stressed_upper": 0.30
+        },
+        "spx_return_thresholds": {
+            "stress": 0.02,
+            "crisis": 0.03
+        },
+        "signal_weights": {
+            "vix": 0.50,
+            "rv": 0.25,
+            "returns": 0.25
+        }
+    },
+    
+    "rv_estimators_config": {
+        "default_lookback": 10,
+        "lookback_windows": [5, 10, 20, 60],
+        "ewma_decay": 0.94,
+        "annualization_factor": 252,
+        "use_log_returns": true
+    },
+    
+    "scenario_config": {
+        "scenarios": [
+            {
+                "name": "SPX_DOWN_5_VOL_UP",
+                "underlying_move": -0.05,
+                "iv_change": 5.0,
+                "description": "SPX down 5%, IV up 5pts"
+            },
+            {
+                "name": "SPX_DOWN_10_VOL_UP",
+                "underlying_move": -0.10,
+                "iv_change": 10.0,
+                "description": "SPX down 10%, IV up 10pts"
+            },
+            {
+                "name": "SPX_UP_5_VOL_DOWN",
+                "underlying_move": 0.05,
+                "iv_change": -3.0,
+                "description": "SPX up 5%, IV down 3pts"
+            },
+            {
+                "name": "VOL_SPIKE",
+                "underlying_move": 0.0,
+                "iv_change": 8.0,
+                "description": "IV spike 8pts, flat spot"
+            },
+            {
+                "name": "VOL_CRUSH",
+                "underlying_move": 0.0,
+                "iv_change": -5.0,
+                "description": "IV crush 5pts, flat spot"
+            }
+        ],
+        "max_scenario_loss_pct": 0.10
+    },
+    
+    "bucket_config": {
+        "symbol_mappings": {
+            "INDEX": ["SPX", "SPY", "QQQ"],
+            "TECH": ["AAPL", "MSFT", "NVDA", "GOOGL", "AMZN", "META", "TSLA"],
+            "SMALL_CAP": ["IWM"],
+            "SINGLE_NAME": []
+        },
+        "vega_limits_pct": {
+            "INDEX": 0.6,
+            "TECH": 0.3,
+            "SMALL_CAP": 0.2,
+            "SINGLE_NAME": 0.15,
+            "UNKNOWN": 0.1
+        },
+        "gamma_limits_pct": {
+            "INDEX": 0.6,
+            "TECH": 0.3,
+            "SMALL_CAP": 0.2,
+            "SINGLE_NAME": 0.15,
+            "UNKNOWN": 0.1
+        }
+    },
+    
+    "execution_config": {
+        "limit_order_offset_bps": 10,
+        "min_absolute_tick_offset": 0.05,
+        "min_edge_after_costs_bps": 20,
+        "spread_cost_multiplier": 0.5,
+        "impact_buffer_bps": 5,
+        "max_participation_pct": 0.20,
+        "illiquid_participation_pct": 0.05,
+        "illiquid_size_threshold": 10,
+        "unfilled_timeout_seconds": 60,
+        "max_replace_attempts": 3
+    },
+    
     "data_requirements": {
         "primary_symbols": ["SPX"],
         "backup_symbols": ["SPY", "QQQ", "IWM", "AAPL", "MSFT", "AMZN", "GOOGL", "TSLA", "NVDA", "META"],
+        "vix_symbol": "VIX",
         "resolution": "Minute",
         "options_data": {
             "required_fields": ["Bid", "Ask", "LastPrice", "Volume", "OpenInterest", "ImpliedVolatility"],
@@ -98,25 +303,34 @@
             "min_daily_volume": 1000
         }
     },
+    
     "performance_benchmarks": {
         "target_sharpe": 1.5,
         "max_drawdown": 0.05,
         "target_win_rate": 0.65,
         "max_var_95": 0.03,
-        "target_calmar": 3.0
+        "target_calmar": 3.0,
+        "max_avg_slippage_bps": 15,
+        "min_spread_capture_bps": 5
     },
+    
     "risk_monitoring": {
         "real_time_checks": [
             "daily_pnl_limit",
             "vega_exposure",
             "delta_neutrality",
+            "gamma_exposure",
             "position_concentration",
-            "liquidity_metrics"
+            "position_age",
+            "scenario_risk",
+            "regime_status"
         ],
         "alerts": {
             "pnl_threshold": 0.015,
             "greek_breach_threshold": 0.8,
+            "scenario_breach_threshold": 0.8,
             "volume_drop_threshold": 0.5
-        }
+        },
+        "snapshot_interval_minutes": 30
     }
 }
