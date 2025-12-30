@@ -1,0 +1,116 @@
+{
+    "backtest_windows": {
+        "calm_bull_low_vol": {
+            "description": "Calm bull market with low volatility (2017-2019)",
+            "start_date": "2017-01-01",
+            "end_date": "2019-12-31",
+            "initial_capital": 1000000,
+            "warmup_days": 60,
+            "expected_regime": "CALM/NORMAL",
+            "notes": "Low VIX period, steady bull market. Good test for strategy in favorable conditions.",
+            "parameters": {
+                "iv_rv_threshold": 1.25,
+                "spread_threshold": 0.004,
+                "max_position_size": 0.06,
+                "vega_limit": 12000,
+                "delta_tolerance": 100,
+                "gamma_limit": 500,
+                "max_daily_loss": 0.025,
+                "target_daily_vol": 0.012,
+                "scenario_max_loss": 0.12,
+                "min_edge_after_costs_bps": 15
+            }
+        },
+        "crash_covid_spike": {
+            "description": "Crash & COVID volatility spike (2020)",
+            "start_date": "2020-01-01",
+            "end_date": "2020-12-31",
+            "initial_capital": 1000000,
+            "warmup_days": 60,
+            "expected_regime": "CRISIS/STRESSED",
+            "notes": "March 2020 crash, VIX spike to 80+, extreme volatility. Critical stress test.",
+            "parameters": {
+                "iv_rv_threshold": 1.15,
+                "spread_threshold": 0.010,
+                "max_position_size": 0.02,
+                "vega_limit": 3000,
+                "delta_tolerance": 50,
+                "gamma_limit": 150,
+                "max_daily_loss": 0.015,
+                "target_daily_vol": 0.005,
+                "scenario_max_loss": 0.05,
+                "min_edge_after_costs_bps": 40,
+                "disable_short_vol_in_crisis": true,
+                "regime_stress_multiplier": 0.3
+            }
+        },
+        "high_vol_bear_2022": {
+            "description": "High-vol bear market / regime change (2022)",
+            "start_date": "2022-01-01",
+            "end_date": "2022-12-31",
+            "initial_capital": 1000000,
+            "warmup_days": 60,
+            "expected_regime": "STRESSED",
+            "notes": "Bear market, inflation, rate hikes. Sustained elevated volatility. Test regime adaptation.",
+            "parameters": {
+                "iv_rv_threshold": 1.2,
+                "spread_threshold": 0.006,
+                "max_position_size": 0.04,
+                "vega_limit": 7000,
+                "delta_tolerance": 75,
+                "gamma_limit": 350,
+                "max_daily_loss": 0.018,
+                "target_daily_vol": 0.008,
+                "scenario_max_loss": 0.08,
+                "min_edge_after_costs_bps": 25,
+                "regime_stress_multiplier": 0.5
+            }
+        },
+        "mixed_recent": {
+            "description": "Mixed / recent market (2023-2024)",
+            "start_date": "2023-01-01",
+            "end_date": "2024-12-31",
+            "initial_capital": 1000000,
+            "warmup_days": 60,
+            "expected_regime": "MIXED",
+            "notes": "Recent period with mixed conditions. Good for overall validation.",
+            "parameters": {
+                "iv_rv_threshold": 1.2,
+                "spread_threshold": 0.005,
+                "max_position_size": 0.05,
+                "vega_limit": 10000,
+                "delta_tolerance": 100,
+                "gamma_limit": 500,
+                "max_daily_loss": 0.02,
+                "target_daily_vol": 0.01,
+                "scenario_max_loss": 0.10,
+                "min_edge_after_costs_bps": 20
+            }
+        }
+    },
+    "global_settings": {
+        "resolution": "Minute",
+        "universe_primary": "SPX",
+        "universe_backup": ["SPY", "QQQ", "IWM", "AAPL", "MSFT"],
+        "liquidity_filters": {
+            "min_open_interest": 1000,
+            "min_daily_volume": 1000,
+            "min_bid": 0.05
+        },
+        "expiration_range": {
+            "min_dte": 1,
+            "max_dte": 45
+        },
+        "rv_lookback_windows": [5, 10, 20, 60],
+        "default_rv_lookback": 10,
+        "ewma_decay": 0.94
+    },
+    "run_order": [
+        "calm_bull_low_vol",
+        "crash_covid_spike",
+        "high_vol_bear_2022",
+        "mixed_recent"
+    ],
+    "notes": "Run each window separately first to inspect regime-specific behavior, then combine into full-span backtest later."
+}
+

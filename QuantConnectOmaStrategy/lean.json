@@ -65,7 +65,8 @@
         "max-unrealized-loss-pct": "0.50",
         
         "log-level": "INFO",
-        "risk-snapshot-interval-minutes": "30"
+        "risk-snapshot-interval-minutes": "30",
+        "warmup-days": "60"
     },
     "environments": {
         "backtesting": {

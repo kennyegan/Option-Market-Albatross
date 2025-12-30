@@ -4,12 +4,16 @@
 
 Your strategy is **ready to run**! Here's what's configured:
 
-- ✅ Start Date: 2023-01-01
-- ✅ End Date: 2024-01-01  
+- ✅ Start Date: 2023-01-01 (update per backtest window)
+- ✅ End Date: 2024-12-31 (update per backtest window)
 - ✅ Initial Capital: $1,000,000
+- ✅ Warmup Period: 60 days (robust RV calculation)
 - ✅ Universe: SPX options (with SPY fallback)
+- ✅ Resolution: Minute (optimal balance)
 - ✅ All modules initialized
 - ✅ Parameters configured in `lean.json`
+
+**📋 See [BACKTEST_PLAN.md](BACKTEST_PLAN.md) for the complete 4-window backtest plan.**
 
 ---
 

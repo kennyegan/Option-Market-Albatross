@@ -275,7 +275,13 @@ See `QuantConnectOmaStrategy/config/backtest_config.json` for details.
 
 Backtesting results will be published here after comprehensive testing across multiple market regimes.
 
-**Planned Metrics:**
+**Planned Backtest Windows:**
+- **Calm Bull (Low Vol)**: 2017-01-01 to 2019-12-31
+- **Crash & COVID Spike**: 2020-01-01 to 2020-12-31
+- **High-Vol Bear**: 2022-01-01 to 2022-12-31
+- **Mixed / Recent**: 2023-01-01 to 2024-12-31
+
+**Metrics to Report:**
 - Sharpe Ratio
 - Maximum Drawdown
 - Win Rate
@@ -285,11 +291,7 @@ Backtesting results will be published here after comprehensive testing across mu
 - Regime-Specific Performance
 - Scenario Stress Test Results
 
-**Test Periods:**
-- 2023-2024 (Normal regime)
-- 2020 (Volatility crisis)
-- 2017 (Low volatility)
-- 2016-2024 (Full history)
+**See [BACKTEST_PLAN.md](BACKTEST_PLAN.md) for detailed backtest execution plan.**
 
 ---
 

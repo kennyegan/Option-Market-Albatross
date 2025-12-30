@@ -54,8 +54,14 @@ class OMAOptionsArbitrageAlgorithm(QCAlgorithm):
         # ================================================================
         # Basic Setup
         # ================================================================
+        # Backtest dates - Update these for different test windows
+        # See BACKTEST_PLAN.md for recommended windows:
+        # - Calm Bull: 2017-01-01 to 2019-12-31
+        # - COVID: 2020-01-01 to 2020-12-31
+        # - 2022 Bear: 2022-01-01 to 2022-12-31
+        # - Recent: 2023-01-01 to 2024-12-31
         self.SetStartDate(2023, 1, 1)
-        self.SetEndDate(2024, 1, 1)
+        self.SetEndDate(2024, 12, 31)
         self.SetCash(1000000)
         self.SetTimeZone(TimeZones.NewYork)
 
@@ -308,7 +314,10 @@ class OMAOptionsArbitrageAlgorithm(QCAlgorithm):
         # ================================================================
         # Warm Up
         # ================================================================
-        self.SetWarmUp(timedelta(days=25))
+        # 60 days warmup for robust RV calculation (supports 5d, 10d, 20d, 60d windows)
+        warmup_days = int(self.GetParameter("warmup-days") or 60)
+        self.SetWarmUp(timedelta(days=warmup_days))
+        self.logger.log(f"Warmup period: {warmup_days} days", LogLevel.INFO)
 
         # ================================================================
         # Track active chains
