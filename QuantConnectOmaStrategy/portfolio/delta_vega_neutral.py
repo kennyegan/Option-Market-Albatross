@@ -1,10 +1,4 @@
-"""
-Delta-Vega Neutral Portfolio Construction Model - Institutional Grade
-Builds option portfolios with controlled greek exposures using Lean Greeks.
-
-Author: OMA Strategy Team
-Version: 2.0 - Enhanced with Lean Greeks, volatility targeting, factor buckets
-"""
+"""Delta-Vega Neutral Portfolio Construction Model - Uses Lean Greeks, vol targeting, factor buckets."""
 
 from AlgorithmImports import *
 from typing import List, Dict, Optional, Tuple, Set
@@ -15,9 +9,7 @@ from datetime import datetime, timedelta
 
 
 class RiskBucket(Enum):
-    """
-    Risk factor bucket classifications for position grouping.
-    """
+    """Risk factor bucket classifications."""
 
     INDEX = "INDEX"  # SPX, SPY, QQQ
     TECH = "TECH"  # AAPL, MSFT, NVDA, etc.
@@ -28,9 +20,7 @@ class RiskBucket(Enum):
 
 @dataclass
 class PortfolioConfig:
-    """
-    Configuration for portfolio construction.
-    """
+    """Portfolio construction configuration."""
 
     # Position sizing
     max_position_size: float = 0.05  # 5% NAV per leg
@@ -78,9 +68,7 @@ class PortfolioConfig:
 
 @dataclass
 class PortfolioRiskSnapshot:
-    """
-    Snapshot of current portfolio risk metrics.
-    """
+    """Current portfolio risk metrics snapshot."""
 
     timestamp: datetime
 
@@ -113,21 +101,7 @@ class PortfolioRiskSnapshot:
 
 
 class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
-    """
-    Institutional-grade portfolio construction model that:
-
-    1. Uses Lean's built-in Greeks (security.Greeks.Delta, etc.)
-    2. Maintains delta-neutral positions with underlying hedges
-    3. Caps vega and gamma exposure at portfolio and bucket levels
-    4. Implements volatility targeting for position sizing
-    5. Groups positions into risk factor buckets
-
-    Key improvements over V1:
-    - Uses Lean Greeks instead of homemade approximations
-    - Portfolio volatility targeting
-    - Factor bucket risk limits
-    - Comprehensive risk snapshot tracking
-    """
+    """Portfolio construction: Lean Greeks, delta-neutral, vol targeting, factor buckets."""
 
     # Symbol to bucket mapping (can be extended)
     SYMBOL_BUCKET_MAP = {
@@ -155,19 +129,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
         regime_classifier=None,
         config: PortfolioConfig = None,
     ):
-        """
-        Initialize the portfolio construction model.
-
-        Args:
-            max_position_size: Maximum position size as fraction of NAV
-            vega_limit: Maximum portfolio vega exposure
-            delta_tolerance: Acceptable delta deviation from neutral
-            rebalance_threshold: Threshold for triggering rebalance
-            logger: StrategyLogger instance
-            rv_calculator: RealizedVolatilityCalculator for vol targeting
-            regime_classifier: VolatilityRegimeClassifier for regime adjustments
-            config: Full PortfolioConfig (overrides individual params)
-        """
+        """Initialize portfolio construction model."""
         if config:
             self.config = config
         else:
@@ -195,16 +157,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
     def CreateTargets(
         self, algorithm: QCAlgorithm, insights: List[Insight]
     ) -> List[PortfolioTarget]:
-        """
-        Create portfolio targets from alpha insights.
-
-        Args:
-            algorithm: QuantConnect algorithm instance
-            insights: List of alpha insights from alpha model
-
-        Returns:
-            List of PortfolioTarget objects
-        """
+        """Create portfolio targets from alpha insights."""
         targets = []
 
         # Update risk snapshot
@@ -265,12 +218,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
         return targets
 
     def _update_risk_snapshot(self, algorithm: QCAlgorithm) -> None:
-        """
-        Update current portfolio risk snapshot using Lean Greeks.
-
-        Args:
-            algorithm: QuantConnect algorithm instance
-        """
+        """Update portfolio risk snapshot using Lean Greeks."""
         snapshot = PortfolioRiskSnapshot(timestamp=algorithm.Time)
         snapshot.portfolio_value = algorithm.Portfolio.TotalPortfolioValue
 
@@ -359,16 +307,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
     def _get_option_greeks(
         self, algorithm: QCAlgorithm, option_symbol: Symbol
     ) -> Optional[Dict]:
-        """
-        Get option Greeks, preferring Lean's built-in Greeks.
-
-        Args:
-            algorithm: Algorithm instance
-            option_symbol: Option symbol
-
-        Returns:
-            Dictionary with delta, vega, gamma, theta or None
-        """
+        """Get option Greeks, preferring Lean's built-in Greeks."""
         # Check cache
         if option_symbol in self.greeks_cache:
             return self.greeks_cache[option_symbol]
@@ -419,19 +358,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
     def _calculate_fallback_greeks(
         self, algorithm: QCAlgorithm, option_symbol: Symbol, security
     ) -> Optional[Dict]:
-        """
-        Calculate approximate Greeks when Lean Greeks unavailable.
-
-        Uses simplified Black-Scholes approximations.
-
-        Args:
-            algorithm: Algorithm instance
-            option_symbol: Option symbol
-            security: Option security
-
-        Returns:
-            Dictionary with approximate Greeks
-        """
+        """Calculate approximate Greeks using simplified Black-Scholes."""
         try:
             underlying = algorithm.Securities.get(option_symbol.Underlying)
             if not underlying:
@@ -526,16 +453,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
     def _estimate_portfolio_vol(
         self, algorithm: QCAlgorithm, snapshot: PortfolioRiskSnapshot
     ) -> float:
-        """
-        Estimate portfolio daily volatility using Greeks and RV.
-
-        Args:
-            algorithm: Algorithm instance
-            snapshot: Current risk snapshot
-
-        Returns:
-            Estimated daily portfolio volatility (as decimal)
-        """
+        """Estimate portfolio daily vol using Greeks and RV."""
         if self.rv_calculator is None:
             return 0.01  # Default 1% if no RV calculator
 
@@ -582,16 +500,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
     def _calculate_vol_scale_factor(
         self, algorithm: QCAlgorithm, snapshot: PortfolioRiskSnapshot = None
     ) -> float:
-        """
-        Calculate position scaling factor to achieve target volatility.
-
-        Args:
-            algorithm: Algorithm instance
-            snapshot: Risk snapshot (uses current if None)
-
-        Returns:
-            Scale factor for position sizes
-        """
+        """Calculate position scaling factor for target volatility."""
         if not self.config.vol_scaling_enabled:
             return 1.0
 
@@ -616,12 +525,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
         return scale
 
     def _get_regime_scale_factor(self) -> float:
-        """
-        Get position scale factor based on volatility regime.
-
-        Returns:
-            Scale factor (0 to 1)
-        """
+        """Get position scale factor based on volatility regime."""
         if self.regime_classifier is None:
             return 1.0
 
@@ -630,15 +534,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
     def _group_insights_by_underlying(
         self, insights: List[Insight]
     ) -> Dict[Symbol, List[Insight]]:
-        """
-        Group insights by their underlying asset.
-
-        Args:
-            insights: List of insights
-
-        Returns:
-            Dictionary mapping underlying to its insights
-        """
+        """Group insights by underlying asset."""
         grouped = {}
 
         for insight in insights:
@@ -660,18 +556,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
         insights: List[Insight],
         scale_factor: float,
     ) -> List[PortfolioTarget]:
-        """
-        Create a delta-neutral option basket from insights.
-
-        Args:
-            algorithm: Algorithm instance
-            underlying: Underlying symbol
-            insights: Insights for this underlying
-            scale_factor: Position size scale factor
-
-        Returns:
-            List of portfolio targets
-        """
+        """Create delta-neutral option basket from insights."""
         targets = []
 
         # Get bucket for underlying
@@ -781,20 +666,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
         current_basket_vega: float,
         algorithm: QCAlgorithm,
     ) -> int:
-        """
-        Calculate appropriate position size respecting all limits.
-
-        Args:
-            insight: Alpha insight
-            greeks: Option Greeks
-            max_position_value: Maximum position value allowed
-            remaining_bucket_vega: Remaining vega capacity in bucket
-            current_basket_vega: Current basket vega
-            algorithm: Algorithm instance
-
-        Returns:
-            Number of contracts (signed)
-        """
+        """Calculate position size respecting all limits."""
         security = algorithm.Securities.get(insight.Symbol)
         if not security:
             return 0
@@ -845,17 +717,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
     def _create_delta_hedge(
         self, algorithm: QCAlgorithm, underlying: Symbol, delta_to_hedge: float
     ) -> Optional[PortfolioTarget]:
-        """
-        Create delta hedge using underlying shares.
-
-        Args:
-            algorithm: Algorithm instance
-            underlying: Underlying symbol
-            delta_to_hedge: Delta amount to hedge (will be negated)
-
-        Returns:
-            Portfolio target for hedge or None
-        """
+        """Create delta hedge using underlying shares."""
         shares = int(round(delta_to_hedge))
 
         if abs(shares) < 1:
@@ -881,16 +743,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
     def _create_hedge_targets(
         self, algorithm: QCAlgorithm, targets: List[PortfolioTarget]
     ) -> List[PortfolioTarget]:
-        """
-        Create additional hedging targets for portfolio delta neutrality.
-
-        Args:
-            algorithm: Algorithm instance
-            targets: Current portfolio targets
-
-        Returns:
-            List of hedging targets
-        """
+        """Create hedging targets for portfolio delta neutrality."""
         # Calculate projected delta from targets
         projected_delta = self.risk_snapshot.total_delta if self.risk_snapshot else 0
 
@@ -939,16 +792,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
     def _validate_risk_limits(
         self, algorithm: QCAlgorithm, targets: List[PortfolioTarget]
     ) -> List[PortfolioTarget]:
-        """
-        Validate targets against all risk limits and scale if needed.
-
-        Args:
-            algorithm: Algorithm instance
-            targets: Proposed portfolio targets
-
-        Returns:
-            Validated and potentially scaled targets
-        """
+        """Validate targets against risk limits and scale if needed."""
         # Calculate projected Greeks
         projected_delta = self.risk_snapshot.total_delta if self.risk_snapshot else 0
         projected_vega = self.risk_snapshot.total_vega if self.risk_snapshot else 0
@@ -997,12 +841,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
         return targets
 
     def _needs_rebalancing(self) -> bool:
-        """
-        Check if portfolio needs rebalancing.
-
-        Returns:
-            True if rebalancing needed
-        """
+        """Check if portfolio needs rebalancing."""
         if self.risk_snapshot is None:
             return False
 
@@ -1017,15 +856,7 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
         return False
 
     def _rebalance_portfolio(self, algorithm: QCAlgorithm) -> List[PortfolioTarget]:
-        """
-        Rebalance portfolio to maintain risk limits.
-
-        Args:
-            algorithm: Algorithm instance
-
-        Returns:
-            List of rebalancing targets
-        """
+        """Rebalance portfolio to maintain risk limits."""
         targets = []
 
         if self.risk_snapshot is None:
@@ -1054,24 +885,13 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
         return targets
 
     def get_risk_snapshot(self) -> Optional[PortfolioRiskSnapshot]:
-        """
-        Get current portfolio risk snapshot.
-
-        Returns:
-            PortfolioRiskSnapshot or None
-        """
+        """Get current portfolio risk snapshot."""
         return self.risk_snapshot
 
     def OnSecuritiesChanged(
         self, algorithm: QCAlgorithm, changes: SecurityChanges
     ) -> None:
-        """
-        Handle security universe changes.
-
-        Args:
-            algorithm: Algorithm instance
-            changes: Security changes
-        """
+        """Handle security universe changes."""
         # Clear Greeks cache for removed securities
         for security in changes.RemovedSecurities:
             if security.Symbol in self.greeks_cache:

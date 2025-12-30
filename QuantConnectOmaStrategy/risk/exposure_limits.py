@@ -1,10 +1,4 @@
-"""
-Exposure Limits Risk Management Model - Institutional Grade
-Enforces risk limits with scenario-based risk checks and regime awareness.
-
-Author: OMA Strategy Team
-Version: 2.0 - Enhanced with scenarios, regime integration, hard enforcement
-"""
+"""Exposure Limits Risk Management - Scenario-based risk checks and regime awareness."""
 
 from AlgorithmImports import *
 from typing import List, Dict, Optional, Tuple
@@ -36,9 +30,7 @@ class ScenarioConfig:
 
 @dataclass
 class RiskConfig:
-    """
-    Configuration for risk management.
-    """
+    """Risk management configuration."""
 
     # Daily loss limits
     max_daily_loss: float = 0.02  # 2% NAV
@@ -117,18 +109,7 @@ class RiskEvent:
 
 
 class ExposureLimitsRiskManagementModel(RiskManagementModel):
-    """
-    Institutional-grade risk management model with:
-
-    1. Daily loss limits with hard enforcement
-    2. Greek limits (delta, vega, gamma) with regime adjustment
-    3. Scenario-based stress testing
-    4. Position age and concentration limits
-    5. Regime-aware risk scaling
-    6. Comprehensive risk event logging
-
-    All risk rules are hard - they generate actual liquidation orders.
-    """
+    """Risk management: daily loss limits, Greek limits, scenario stress tests, regime-aware scaling."""
 
     def __init__(
         self,
@@ -140,18 +121,7 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
         regime_classifier=None,
         config: RiskConfig = None,
     ):
-        """
-        Initialize the risk management model.
-
-        Args:
-            max_daily_loss: Maximum daily loss as fraction of NAV
-            vega_limit: Maximum portfolio vega exposure
-            delta_tolerance: Maximum acceptable delta deviation
-            max_position_age_hours: Maximum hours to hold position
-            logger: StrategyLogger instance
-            regime_classifier: VolatilityRegimeClassifier instance
-            config: Full RiskConfig (overrides individual params)
-        """
+        """Initialize risk management model."""
         if config:
             self.config = config
         else:
@@ -201,18 +171,7 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
     def ManageRisk(
         self, algorithm: QCAlgorithm, targets: List[PortfolioTarget]
     ) -> List[PortfolioTarget]:
-        """
-        Main risk management entry point.
-
-        Checks all risk rules and generates liquidation targets as needed.
-
-        Args:
-            algorithm: QuantConnect algorithm instance
-            targets: Current portfolio targets from portfolio construction
-
-        Returns:
-            List of risk management targets (may include liquidations)
-        """
+        """Main risk management entry point - checks all risk rules."""
         risk_targets = []
 
         # Update daily tracking
@@ -317,12 +276,7 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
         return snapshot.regime.value if snapshot else "NORMAL"
 
     def _check_daily_loss_limit(self, algorithm: QCAlgorithm) -> bool:
-        """
-        Check if daily loss limit has been breached.
-
-        Returns:
-            True if limit breached and liquidation needed
-        """
+        """Check if daily loss limit breached."""
         if self.daily_starting_value is None or self.daily_starting_value <= 0:
             return False
 
@@ -358,12 +312,7 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
         return False
 
     def _run_scenario_analysis(self, algorithm: QCAlgorithm) -> List[ScenarioResult]:
-        """
-        Run all configured stress scenarios.
-
-        Returns:
-            List of ScenarioResult objects
-        """
+        """Run all configured stress scenarios."""
         results = []
         portfolio_value = algorithm.Portfolio.TotalPortfolioValue
 
@@ -372,27 +321,10 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
 
         for scenario in self.config.scenarios:
             # Estimate P&L from scenario
-            # Delta P&L: delta * underlying_move * underlying_price
-            # This is simplified - assumes one underlying
-            underlying_exposure = 0
-            for holding in algorithm.Portfolio.Values:
-                if holding.Symbol.SecurityType in [
-                    SecurityType.Equity,
-                    SecurityType.Index,
-                ]:
-                    underlying_exposure = holding.HoldingsValue
-                    break
-
-            # Approximate underlying price for delta contribution
-            delta_pnl = greeks["delta"] * scenario.underlying_move * 100  # Simplified
-
-            # Gamma P&L: 0.5 * gamma * (move)^2 * underlying_price^2
+            # Simplified P&L estimation
+            delta_pnl = greeks["delta"] * scenario.underlying_move * 100
             gamma_pnl = 0.5 * greeks["gamma"] * (scenario.underlying_move**2) * 10000
-
-            # Vega P&L: vega * iv_change (vega is per 1% move)
             vega_pnl = greeks["vega"] * scenario.iv_change
-
-            # Total estimated P&L
             total_pnl = delta_pnl + gamma_pnl + vega_pnl
             pnl_pct = total_pnl / portfolio_value if portfolio_value > 0 else 0
 
@@ -412,16 +344,7 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
     def _check_scenario_limits(
         self, algorithm: QCAlgorithm, scenario_results: List[ScenarioResult]
     ) -> List[PortfolioTarget]:
-        """
-        Check scenario results against limits and generate actions.
-
-        Args:
-            algorithm: Algorithm instance
-            scenario_results: List of scenario stress test results
-
-        Returns:
-            List of targets to reduce risk
-        """
+        """Check scenario results against limits and generate actions."""
         targets = []
 
         for result in scenario_results:
@@ -466,16 +389,7 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
     def _check_greek_limits(
         self, algorithm: QCAlgorithm, regime: str
     ) -> List[PortfolioTarget]:
-        """
-        Check Greek limits with regime adjustment.
-
-        Args:
-            algorithm: Algorithm instance
-            regime: Current volatility regime
-
-        Returns:
-            List of targets to enforce limits
-        """
+        """Check Greek limits with regime adjustment."""
         targets = []
         greeks = self._calculate_portfolio_greeks(algorithm)
 
@@ -559,12 +473,7 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
         return targets
 
     def _calculate_portfolio_greeks(self, algorithm: QCAlgorithm) -> Dict:
-        """
-        Calculate current portfolio Greeks using Lean Greeks where available.
-
-        Returns:
-            Dictionary with delta, vega, gamma, theta
-        """
+        """Calculate portfolio Greeks using Lean Greeks where available."""
         greeks = {"delta": 0, "vega": 0, "gamma": 0, "theta": 0}
 
         for holding in algorithm.Portfolio.Values:
@@ -584,7 +493,6 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
                     greeks["gamma"] += option_greeks["gamma"] * qty * multiplier
                     greeks["theta"] += option_greeks["theta"] * qty * multiplier
             else:
-                # Equity/Index has delta = quantity
                 greeks["delta"] += holding.Quantity
 
         return greeks
@@ -592,16 +500,7 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
     def _get_option_greeks(
         self, algorithm: QCAlgorithm, option_symbol: Symbol
     ) -> Optional[Dict]:
-        """
-        Get option Greeks, preferring Lean's built-in values.
-
-        Args:
-            algorithm: Algorithm instance
-            option_symbol: Option symbol
-
-        Returns:
-            Dictionary with Greeks or None
-        """
+        """Get option Greeks, preferring Lean's built-in values."""
         # Check cache
         if option_symbol in self.greeks_cache:
             return self.greeks_cache[option_symbol]
@@ -613,7 +512,6 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
         greeks = {}
 
         try:
-            # Try Lean Greeks first
             if hasattr(security, "Greeks") and security.Greeks is not None:
                 lean_greeks = security.Greeks
 
@@ -626,7 +524,6 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
                     self.greeks_cache[option_symbol] = greeks
                     return greeks
 
-            # Fallback calculation
             greeks = self._calculate_fallback_greeks(algorithm, option_symbol, security)
 
         except Exception:
@@ -681,16 +578,7 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
     def _reduce_vega_exposure(
         self, algorithm: QCAlgorithm, scale: float = 0.5
     ) -> List[PortfolioTarget]:
-        """
-        Reduce vega exposure by scaling down positions.
-
-        Args:
-            algorithm: Algorithm instance
-            scale: Scale factor for reduction (0.5 = reduce by 50%)
-
-        Returns:
-            List of position reduction targets
-        """
+        """Reduce vega exposure by scaling down positions."""
         targets = []
 
         # Collect positions with vega contribution
@@ -729,16 +617,7 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
     def _reduce_gamma_exposure(
         self, algorithm: QCAlgorithm, scale: float = 0.5
     ) -> List[PortfolioTarget]:
-        """
-        Reduce gamma exposure by scaling down short-dated positions.
-
-        Args:
-            algorithm: Algorithm instance
-            scale: Scale factor
-
-        Returns:
-            List of position reduction targets
-        """
+        """Reduce gamma exposure by scaling down short-dated positions."""
         targets = []
 
         # Collect positions with gamma contribution
