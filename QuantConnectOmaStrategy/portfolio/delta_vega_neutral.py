@@ -6,6 +6,7 @@ from dataclasses import dataclass, field
 from enum import Enum
 import numpy as np
 from datetime import datetime, timedelta
+from utils.logger import LogLevel
 
 
 class RiskBucket(Enum):
@@ -360,8 +361,19 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
     ) -> Optional[Dict]:
         """Calculate approximate Greeks using simplified Black-Scholes."""
         try:
-            underlying = algorithm.Securities.get(option_symbol.Underlying)
-            if not underlying:
+            # Get underlying symbol and security
+            if (
+                not hasattr(option_symbol, "Underlying")
+                or option_symbol.Underlying is None
+            ):
+                return None
+
+            underlying_symbol = option_symbol.Underlying
+            if underlying_symbol not in algorithm.Securities:
+                return None
+
+            underlying = algorithm.Securities[underlying_symbol]
+            if underlying is None or not hasattr(underlying, "Price"):
                 return None
 
             underlying_price = underlying.Price
@@ -378,32 +390,27 @@ class DeltaVegaNeutralPortfolioConstructionModel(PortfolioConstructionModel):
             moneyness = underlying_price / strike
 
             # IV from security if available
-            iv = (
-                security.ImpliedVolatility
-                if hasattr(security, "ImpliedVolatility")
-                and security.ImpliedVolatility > 0
-                else 0.25
-            )
+            iv = 0.25
+            if hasattr(security, "ImpliedVolatility") and security.ImpliedVolatility:
+                if security.ImpliedVolatility > 0:
+                    iv = security.ImpliedVolatility
 
-            # Approximate delta
-            if option_symbol.ID.OptionRight == OptionRight.Call:
-                if moneyness > 1.1:
-                    delta = min(0.95, 0.5 + (moneyness - 1) * 3)
-                elif moneyness < 0.9:
-                    delta = max(0.05, 0.5 - (1 - moneyness) * 3)
-                else:
-                    # Near ATM - use normal approximation
-                    d1 = (np.log(moneyness) + 0.5 * iv * iv * tte) / (iv * np.sqrt(tte))
-                    delta = 0.5 * (1 + np.clip(d1 / 2, -1, 1))
+            # Approximate delta using simple approximation (no recursion)
+            is_call = option_symbol.ID.OptionRight == OptionRight.Call
+            if moneyness > 1.1:
+                call_delta = min(0.95, 0.5 + (moneyness - 1) * 3)
+            elif moneyness < 0.9:
+                call_delta = max(0.05, 0.5 - (1 - moneyness) * 3)
             else:
-                # Put delta
-                call_delta = self._calculate_fallback_greeks(
-                    algorithm, option_symbol.ID.OptionRight == OptionRight.Put, security
-                )
-                if call_delta:
-                    delta = call_delta.get("delta", 0.5) - 1
-                else:
-                    delta = -0.5
+                # Near ATM - use normal approximation
+                d1 = (np.log(moneyness) + 0.5 * iv * iv * tte) / (iv * np.sqrt(tte))
+                call_delta = 0.5 * (1 + np.clip(d1 / 2, -1, 1))
+
+            # Delta based on option type
+            if is_call:
+                delta = call_delta
+            else:
+                delta = call_delta - 1  # Put-Call parity
 
             # Vega - peaks at ATM, scales with sqrt(T)
             atm_factor = np.exp(-8 * (moneyness - 1) ** 2)

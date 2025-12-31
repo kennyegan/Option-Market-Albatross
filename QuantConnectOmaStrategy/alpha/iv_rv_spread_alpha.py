@@ -11,6 +11,7 @@ from typing import List, Dict, Optional, Tuple
 from dataclasses import dataclass
 import numpy as np
 from datetime import datetime, timedelta
+from utils.logger import LogLevel
 
 
 @dataclass
@@ -603,64 +604,33 @@ class IVRVSpreadAlphaModel(AlphaModel):
         else:
             period = timedelta(hours=self.config.default_insight_period_hours)
 
-        # Create insight
+        # Create insight with proper parameter order
+        # Insight(symbol, period, type, direction, magnitude, confidence, sourceModel)
         insight = Insight(
             contract.Symbol,
             period,
             InsightType.Price,
             direction,
+            None,  # magnitude (optional)
             confidence,
-            sourceModel="IVRVSpreadAlpha_v2",
+            "IVRVSpreadAlpha_v2",
         )
 
-        # Add comprehensive metadata
+        # Calculate metadata for logging (Insight doesn't have Properties in QC)
         iv = contract.ImpliedVolatility if hasattr(contract, "ImpliedVolatility") else 0
-        insight.Properties["SignalType"] = (
-            "IV_RV" if abs(iv_rv_signal) > abs(spread_signal) else "Spread"
-        )
-        insight.Properties["IVRVSignal"] = iv_rv_signal
-        insight.Properties["SpreadSignal"] = spread_signal
-        insight.Properties["TotalSignal"] = total_signal
-        insight.Properties["IV"] = iv
-        insight.Properties["RV_Ensemble"] = rv_data.get("ensemble", 0)
-        insight.Properties["RV_Uncertainty"] = rv_data.get("uncertainty", 0)
-        insight.Properties["IVRVRatio"] = (
-            iv / rv_data["ensemble"] if rv_data["ensemble"] > 0 else 0
-        )
-        insight.Properties["Strike"] = contract.Strike
-        insight.Properties["Expiry"] = contract.Expiry
-        insight.Properties["Right"] = str(contract.Right)
-        insight.Properties["Moneyness"] = moneyness
-        insight.Properties["DTE"] = dte
-        insight.Properties["Regime"] = regime or "UNKNOWN"
-        
-        # Get bid/ask from security
-        security = algorithm.Securities.get(contract.Symbol)
-        if security:
-            bid = security.BidPrice
-            ask = security.AskPrice
-            insight.Properties["Bid"] = bid
-            insight.Properties["Ask"] = ask
-            insight.Properties["Mark"] = (bid + ask) / 2 if bid + ask > 0 else 0
-            insight.Properties["SpreadPct"] = (
-                (ask - bid) / ((bid + ask) / 2) if bid + ask > 0 else 0
-            )
-        else:
-            insight.Properties["Bid"] = 0
-            insight.Properties["Ask"] = 0
-            insight.Properties["Mark"] = 0
-            insight.Properties["SpreadPct"] = 0
+        signal_type = "IV_RV" if abs(iv_rv_signal) > abs(spread_signal) else "Spread"
+        iv_rv_ratio = iv / rv_data["ensemble"] if rv_data.get("ensemble", 0) > 0 else 0
 
         # Log signal generation
         if self.logger:
             self.logger.log_signal(
-                signal_type=insight.Properties["SignalType"],
+                signal_type=signal_type,
                 symbol=contract.Symbol,
                 strength=total_signal,
                 metadata={
                     "iv": iv,
-                    "rv": rv_data["ensemble"],
-                    "ratio": insight.Properties["IVRVRatio"],
+                    "rv": rv_data.get("ensemble", 0),
+                    "ratio": iv_rv_ratio,
                     "moneyness": moneyness,
                     "dte": dte,
                     "regime": regime,

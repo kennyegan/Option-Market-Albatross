@@ -13,6 +13,7 @@ from enum import Enum
 import numpy as np
 from datetime import datetime, timedelta
 from collections import deque
+from utils.logger import LogLevel
 
 
 class OrderStatus(Enum):
@@ -347,24 +348,25 @@ class SmartExecutionModel(ExecutionModel):
         )
 
         # Execute order
+        qty = int(quantity)
         if use_limit:
             limit_price = self._calculate_limit_price(bid, ask, quantity, mid)
             tracker.limit_price = limit_price
 
-            order = algorithm.LimitOrder(security.Symbol, int(quantity), limit_price)
+            order = algorithm.LimitOrder(security.Symbol, qty, limit_price)
 
             if self.logger:
                 self.logger.log(
-                    f"LIMIT {quantity:+d} {security.Symbol} @ ${limit_price:.2f} | "
+                    f"LIMIT {qty:+d} {security.Symbol} @ ${limit_price:.2f} | "
                     f"Spread: {spread_pct:.2%} | Mid: ${mid:.2f}",
                     LogLevel.INFO,
                 )
         else:
-            order = algorithm.MarketOrder(security.Symbol, int(quantity))
+            order = algorithm.MarketOrder(security.Symbol, qty)
 
             if self.logger:
                 self.logger.log(
-                    f"MARKET {quantity:+d} {security.Symbol} @ ~${mid:.2f}",
+                    f"MARKET {qty:+d} {security.Symbol} @ ~${mid:.2f}",
                     LogLevel.INFO,
                 )
 
@@ -384,11 +386,12 @@ class SmartExecutionModel(ExecutionModel):
         Uses market orders for immediacy on hedges.
         """
         # Market orders for equity hedges
-        order = algorithm.MarketOrder(security.Symbol, int(quantity))
+        qty = int(quantity)
+        order = algorithm.MarketOrder(security.Symbol, qty)
 
         if order and self.logger:
             self.logger.log(
-                f"HEDGE MARKET {quantity:+d} {security.Symbol} @ ${security.Price:.2f}",
+                f"HEDGE MARKET {qty:+d} {security.Symbol} @ ${security.Price:.2f}",
                 LogLevel.INFO,
             )
 

@@ -457,8 +457,12 @@ class OMAOptionsArbitrageAlgorithm(QCAlgorithm):
                 if security:
                     bid = security.BidPrice
                     ask = security.AskPrice
-                    if (bid > 0 and ask > bid and 
-                        contract.BidSize > 0 and contract.AskSize > 0):
+                    if (
+                        bid > 0
+                        and ask > bid
+                        and contract.BidSize > 0
+                        and contract.AskSize > 0
+                    ):
                         liquid_contracts.append(contract)
 
         # Store active chains

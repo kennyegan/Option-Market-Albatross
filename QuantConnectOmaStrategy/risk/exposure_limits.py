@@ -540,8 +540,22 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
     ) -> Optional[Dict]:
         """Calculate approximate Greeks when Lean Greeks unavailable."""
         try:
-            underlying = algorithm.Securities.get(option_symbol.Underlying)
-            if not underlying or underlying.Price <= 0:
+            # Get underlying symbol and security safely
+            if (
+                not hasattr(option_symbol, "Underlying")
+                or option_symbol.Underlying is None
+            ):
+                return None
+
+            underlying_symbol = option_symbol.Underlying
+            if underlying_symbol not in algorithm.Securities:
+                return None
+
+            underlying = algorithm.Securities[underlying_symbol]
+            if underlying is None or not hasattr(underlying, "Price"):
+                return None
+
+            if underlying.Price <= 0:
                 return None
 
             underlying_price = underlying.Price
@@ -669,12 +683,6 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
         if abs(hedge_shares) < 1:
             return None
 
-        if self.logger:
-            self.logger.log(
-                f"Delta hedge: {underlying} shares={hedge_shares} (current delta={current_delta:.0f})",
-                LogLevel.INFO,
-            )
-
         return PortfolioTarget(underlying, hedge_shares)
 
     def _check_position_age(self, algorithm: QCAlgorithm) -> List[PortfolioTarget]:
@@ -687,8 +695,6 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
                 continue
 
             symbol = holding.Symbol
-
-            # Track entry time
             if symbol not in self.position_entry_times:
                 self.position_entry_times[symbol] = current_time
                 continue
@@ -700,26 +706,14 @@ class ExposureLimitsRiskManagementModel(RiskManagementModel):
             if age_hours > self.config.max_position_age_hours:
                 targets.append(PortfolioTarget(symbol, 0))
                 self.risk_metrics["positions_closed"] += 1
-
                 self._log_risk_event(
                     algorithm,
                     "POSITION_AGE",
                     "MaxPositionAge",
-                    {
-                        "symbol": str(symbol),
-                        "age_hours": age_hours,
-                        "limit": self.config.max_position_age_hours,
-                    },
+                    {"symbol": str(symbol), "age_hours": age_hours},
                     RiskAction.CLOSE_POSITION,
                     [symbol],
                 )
-
-                if self.logger:
-                    self.logger.log(
-                        f"Closing aged position: {symbol} | Age: {age_hours:.1f}h | "
-                        f"Limit: {self.config.max_position_age_hours}h",
-                        LogLevel.INFO,
-                    )
 
         return targets
 
