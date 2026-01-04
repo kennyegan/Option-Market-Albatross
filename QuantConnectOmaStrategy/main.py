@@ -72,14 +72,14 @@ class OMAOptionsArbitrageAlgorithm(QCAlgorithm):
         self.iv_rv_threshold = float(self.GetParameter("iv-rv-threshold") or 1.2)
         self.spread_threshold = float(self.GetParameter("spread-threshold") or 0.005)
 
-        # Position sizing
-        self.max_position_size = float(self.GetParameter("max-position-size") or 0.05)
+        # Position sizing (conservative for SPX margin requirements)
+        self.max_position_size = float(self.GetParameter("max-position-size") or 0.01)
         self.target_daily_vol = float(self.GetParameter("target-daily-vol") or 0.01)
 
-        # Greek limits
-        self.vega_limit = float(self.GetParameter("vega-limit") or 10000)
-        self.delta_tolerance = float(self.GetParameter("delta-tolerance") or 100)
-        self.gamma_limit = float(self.GetParameter("gamma-limit") or 500)
+        # Greek limits (reduced for margin safety)
+        self.vega_limit = float(self.GetParameter("vega-limit") or 2000)
+        self.delta_tolerance = float(self.GetParameter("delta-tolerance") or 25)
+        self.gamma_limit = float(self.GetParameter("gamma-limit") or 100)
 
         # Risk parameters
         self.max_daily_loss = float(self.GetParameter("max-daily-loss") or 0.02)
