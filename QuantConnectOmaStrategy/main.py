@@ -62,7 +62,7 @@ class OMAOptionsArbitrageAlgorithm(QCAlgorithm):
         # - Recent: 2023-01-01 to 2024-12-31
         self.SetStartDate(2023, 1, 1)
         self.SetEndDate(2024, 12, 31)
-        self.SetCash(1000000)
+        self.SetCash(5000000)  # $5M for SPX options margin requirements
         self.SetTimeZone(TimeZones.NewYork)
 
         # ================================================================

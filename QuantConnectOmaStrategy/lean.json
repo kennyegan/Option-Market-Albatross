@@ -5,10 +5,10 @@
         "iv-rv-threshold": "1.2",
         "iv-rv-max-signal": "2.0",
         "spread-threshold": "0.005",
-        "max-position-size": "0.05",
-        "vega-limit": "10000",
-        "delta-tolerance": "100",
-        "gamma-limit": "500",
+        "max-position-size": "0.01",
+        "vega-limit": "2000",
+        "delta-tolerance": "25",
+        "gamma-limit": "100",
         "max-daily-loss": "0.02",
         "warning-daily-loss": "0.015",
         
@@ -61,7 +61,7 @@
         "min-absolute-tick-offset": "0.05",
         
         "max-position-age-hours": "24",
-        "max-position-pct": "0.10",
+        "max-position-pct": "0.05",
         "max-unrealized-loss-pct": "0.50",
         
         "log-level": "INFO",
