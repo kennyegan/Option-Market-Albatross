@@ -16,8 +16,8 @@ from collections import deque
 from utils.logger import LogLevel
 
 
-class OrderStatus(Enum):
-    """Custom order status for tracking."""
+class TrackingStatus(Enum):
+    """Internal order tracking status (separate from QC's OrderStatus)."""
 
     PENDING = "PENDING"
     WORKING = "WORKING"
@@ -122,7 +122,7 @@ class OrderTracker:
     theoretical_edge_bps: Optional[float] = None
 
     # Status tracking
-    status: OrderStatus = OrderStatus.PENDING
+    status: TrackingStatus = TrackingStatus.PENDING
     filled_quantity: int = 0
     avg_fill_price: float = 0
 
@@ -373,7 +373,7 @@ class SmartExecutionModel(ExecutionModel):
         # Track order
         if order:
             tracker.order_id = order.OrderId
-            tracker.status = OrderStatus.WORKING
+            tracker.status = TrackingStatus.WORKING
             self.working_orders[order.OrderId] = tracker
             self.execution_metrics["total_orders"] += 1
 
@@ -572,7 +572,7 @@ class SmartExecutionModel(ExecutionModel):
                 else:
                     # Max replacements reached - cancel
                     algorithm.Transactions.CancelOrder(order_id)
-                    tracker.status = OrderStatus.CANCELLED
+                    tracker.status = TrackingStatus.CANCELLED
                     self.execution_metrics["cancelled_orders"] += 1
                     self.tca_summary["cancelled_orders"] += 1
 
@@ -625,7 +625,7 @@ class SmartExecutionModel(ExecutionModel):
 
             if theoretical_edge - total_cost < self.config.min_edge_after_costs_bps:
                 # Edge gone - don't replace
-                tracker.status = OrderStatus.CANCELLED
+                tracker.status = TrackingStatus.CANCELLED
                 if self.logger:
                     self.logger.log(
                         f"Edge gone - not replacing: {tracker.symbol}", LogLevel.DEBUG
